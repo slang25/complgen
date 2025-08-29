@@ -29,7 +29,8 @@ def complgen_binary_path(cargo_manifest_path: Path) -> Path:
         stdout=sys.stdout,
         stderr=sys.stderr,
     )
-    binary_path = cargo_manifest_path.parent / "target/release/complgen"
+    binary_name = "complgen.exe" if os.name == "nt" else "complgen"
+    binary_path = cargo_manifest_path.parent / "target/release" / binary_name
     assert binary_path.exists()
     return binary_path
 
