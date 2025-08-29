@@ -226,3 +226,39 @@ pub fn write_completion_script<W: Write>(buffer: &mut W, command: &str, dfa: &DF
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::dfa::DFA;
+    use crate::regex::Regex;
+    use crate::grammar::{Grammar, ValidGrammar, Shell};
+
+    #[test]
+    fn test_basic_pwsh_completion_script_generation() {
+        let input = "testcmd foo bar;";
+        let grammar = Grammar::parse(input).map_err(|e| e.to_string()).unwrap();
+        let validated = ValidGrammar::from_grammar(grammar, Shell::Pwsh).unwrap();
+        let regex = Regex::from_expr(validated.expr, &validated.arena, &validated.specializations).unwrap();
+        let dfa = DFA::from_regex(&regex, validated.subdfa_interner);
+        
+        let mut output = Vec::new();
+        write_completion_script(&mut output, &validated.command, &dfa).unwrap();
+        
+        let script = String::from_utf8(output).unwrap();
+        
+        // Verify basic structure
+        assert!(script.contains("Register-ArgumentCompleter"));
+        assert!(script.contains("testcmd"));
+        assert!(script.contains("'foo'"));
+        assert!(script.contains("'bar'"));
+        assert!(script.contains("$completions"));
+    }
+
+    #[test]
+    fn test_make_string_constant() {
+        assert_eq!(make_string_constant("simple"), "'simple'");
+        assert_eq!(make_string_constant("with'quote"), "'with''quote'");
+        assert_eq!(make_string_constant(""), "''");
+    }
+}
