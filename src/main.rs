@@ -34,6 +34,9 @@ struct Cli {
     #[clap(long, help = "Write zsh completion script", name = "ZSH_SCRIPT_PATH")]
     zsh: Option<String>,
 
+    #[clap(long, help = "Write PowerShell completion script", name = "PWSH_SCRIPT_PATH")]
+    pwsh: Option<String>,
+
     #[clap(
         long,
         help = "Write DFA in GraphViz .dot format",
@@ -237,10 +240,11 @@ fn aot(args: &Cli) -> anyhow::Result<()> {
         to_railroad_diagram_file(&grammar, railroad_svg_path).context(railroad_svg_path.clone())?;
     }
 
-    let (shell, path) = match (&args.bash, &args.fish, &args.zsh) {
-        (Some(path), None, None) => (Shell::Bash, path),
-        (None, Some(path), None) => (Shell::Fish, path),
-        (None, None, Some(path)) => (Shell::Zsh, path),
+    let (shell, path) = match (&args.bash, &args.fish, &args.zsh, &args.pwsh) {
+        (Some(path), None, None, None) => (Shell::Bash, path),
+        (None, Some(path), None, None) => (Shell::Fish, path),
+        (None, None, Some(path), None) => (Shell::Zsh, path),
+        (None, None, None, Some(path)) => (Shell::Pwsh, path),
 
         _ => todo!(),
     };
@@ -302,6 +306,9 @@ fn aot(args: &Cli) -> anyhow::Result<()> {
                 );
             }
             complgen::zsh::write_completion_script(&mut writer, &validated.command, &dfa)?;
+        }
+        Shell::Pwsh => {
+            complgen::pwsh::write_completion_script(&mut writer, &validated.command, &dfa)?;
         }
     }
 

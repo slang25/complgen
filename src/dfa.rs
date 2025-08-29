@@ -854,6 +854,35 @@ impl DFA {
         transitions
     }
 
+    pub fn get_pwsh_nontail_transitions_from(&self, from: StateId) -> Vec<(Ustr, StateId)> {
+        let map = match self.transitions.get(&from) {
+            Some(map) => map,
+            None => return vec![],
+        };
+        let transitions: Vec<(Ustr, StateId)> = map
+            .iter()
+            .filter_map(|(input, to)| match input {
+                Input::Command {
+                    cmd: _,
+                    regex:
+                        Some(CmdRegex {
+                            pwsh: Some(regex), ..
+                        }),
+                    ..
+                } => Some((*regex, *to)),
+                Input::Command { regex: None, .. } => None,
+                Input::Command {
+                    regex: Some(CmdRegex { pwsh: None, .. }),
+                    ..
+                } => None,
+                Input::Literal { .. } => None,
+                Input::Subword { .. } => None,
+                Input::Nonterminal { .. } => None,
+            })
+            .collect();
+        transitions
+    }
+
     pub fn get_subword_transitions_from(&self, from: StateId) -> Vec<(DFAId, StateId)> {
         let map = match self.transitions.get(&from) {
             Some(map) => map,
