@@ -138,6 +138,7 @@ pub struct CmdRegex {
     pub bash: Option<Ustr>,
     pub fish: Option<Ustr>,
     pub zsh: Option<Ustr>,
+    pub pwsh: Option<Ustr>,
 }
 
 #[derive(Copy, Clone)]
@@ -145,6 +146,7 @@ pub enum Shell {
     Bash,
     Fish,
     Zsh,
+    Pwsh,
 }
 
 impl CmdRegex {
@@ -153,6 +155,7 @@ impl CmdRegex {
             Shell::Bash => self.bash.is_none(),
             Shell::Fish => self.fish.is_none(),
             Shell::Zsh => self.zsh.is_none(),
+            Shell::Pwsh => self.pwsh.is_none(),
         }
     }
 }
@@ -162,6 +165,7 @@ pub struct Specialization {
     pub bash: Option<Ustr>,
     pub fish: Option<Ustr>,
     pub zsh: Option<Ustr>,
+    pub pwsh: Option<Ustr>,
     pub generic: Option<Ustr>,
 }
 
@@ -537,6 +541,7 @@ fn cmd_regex_decl(mut input: Span) -> IResult<Span, CmdRegex> {
         bash: None,
         fish: None,
         zsh: None,
+        pwsh: None,
     } = spec
     {
         return fail(input);
@@ -916,6 +921,7 @@ fn make_specializations_map(
             bash: Some(ustr(r#"compgen -A file "$1""#)),
             fish: Some(ustr(r#"__fish_complete_path "$1""#)),
             zsh: Some(ustr("_path_files")),
+            pwsh: None,
             generic: None,
         });
 
@@ -925,6 +931,7 @@ fn make_specializations_map(
             bash: Some(ustr(r#"compgen -A directory "$1""#)),
             fish: Some(ustr(r#"__fish_complete_directories "$1""#)),
             zsh: Some(ustr("_path_files -/")),
+            pwsh: None,
             generic: None,
         });
 
@@ -934,6 +941,7 @@ fn make_specializations_map(
             bash: None,
             fish: Some(ustr(r#"__fish_complete_pids"#)),
             zsh: Some(ustr(r#"_pids"#)),
+            pwsh: None,
             generic: None,
         });
 
@@ -945,6 +953,7 @@ fn make_specializations_map(
             )),
             fish: Some(ustr(r#"__fish_complete_users"#)),
             zsh: Some(ustr(r#"_users"#)),
+            pwsh: None,
             generic: None,
         });
 
@@ -956,6 +965,7 @@ fn make_specializations_map(
             )),
             fish: Some(ustr(r#"__fish_complete_groups"#)),
             zsh: Some(ustr(r#"_groups"#)),
+            pwsh: None,
             generic: None,
         });
 
@@ -967,6 +977,7 @@ fn make_specializations_map(
             )),
             fish: Some(ustr(r#"__fish_complete_hostnames"#)),
             zsh: Some(ustr(r#"_hosts"#)),
+            pwsh: None,
             generic: None,
         });
 
@@ -976,6 +987,7 @@ fn make_specializations_map(
             bash: None,
             fish: Some(ustr(r#"__fish_complete_interfaces"#)),
             zsh: Some(ustr(r#"_net_interfaces"#)),
+            pwsh: None,
             generic: None,
         });
 
@@ -985,6 +997,7 @@ fn make_specializations_map(
             bash: None,
             fish: Some(ustr(r#"__fish_complete_packages"#)),
             zsh: None,
+            pwsh: None,
             generic: None,
         });
 
@@ -2216,6 +2229,7 @@ pub mod tests {
                     bash: Some(ustr("bar")),
                     fish: None,
                     zsh: None,
+                    pwsh: None,
                 }),
                 fallback: 0,
                 span: None,
@@ -3305,6 +3319,7 @@ ls <FILE>;
                     bash: Some(ustr("bar")),
                     fish: Some(ustr("baz")),
                     zsh: Some(ustr("quux")),
+                    pwsh: None,
                 }),
                 fallback: 0,
                 span: None,
