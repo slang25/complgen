@@ -90,8 +90,12 @@ fn write_lookup_tables<W: Write>(
 
     // Write literals array
     writeln!(buffer, "    $literals = @(")?;
-    for (_, literal, _) in &all_literals {
-        writeln!(buffer, "        {},", make_string_constant(literal))?;
+    for (i, (_, literal, _)) in all_literals.iter().enumerate() {
+        if i < all_literals.len() - 1 {
+            writeln!(buffer, "        {},", make_string_constant(literal))?;
+        } else {
+            writeln!(buffer, "        {}", make_string_constant(literal))?;
+        }
     }
     writeln!(buffer, "    )")?;
 
@@ -114,8 +118,12 @@ fn write_lookup_tables<W: Write>(
 
     // Write regexes array
     writeln!(buffer, "    $regexes = @(")?;
-    for regex in id_from_regex {
-        writeln!(buffer, "        {},", make_string_constant(regex))?;
+    for (i, regex) in id_from_regex.iter().enumerate() {
+        if i < id_from_regex.len() - 1 {
+            writeln!(buffer, "        {},", make_string_constant(regex))?;
+        } else {
+            writeln!(buffer, "        {}", make_string_constant(regex))?;
+        }
     }
     writeln!(buffer, "    )")?;
 
@@ -141,6 +149,11 @@ pub fn write_completion_script<W: Write>(buffer: &mut W, command: &str, dfa: &DF
     
     for (cmd_id, cmd) in id_from_cmd.iter().enumerate() {
         writeln!(buffer, "            {} {{ & {} $Input }}", cmd_id, make_string_constant(cmd))?;
+    }
+    
+    // Add default case to handle empty switch statements
+    if id_from_cmd.is_empty() {
+        writeln!(buffer, "            default {{ return @() }}")?;
     }
     
     writeln!(buffer, "        }}")?;
