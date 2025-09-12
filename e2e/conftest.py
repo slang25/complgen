@@ -205,7 +205,13 @@ def get_bash_completion_sh_path() -> str:
     elif os.path.exists("/usr/share/bash-completion/bash_completion"):
         return "/usr/share/bash-completion/bash_completion"
     else:
-        assert False, "Make sure OS package bash-completion is installed"
+        # On Windows or other systems where bash completion is not available,
+        # return empty string to skip sourcing bash completion files
+        import platform
+        if os.name == 'nt' or platform.system() == 'Windows':
+            return ""
+        else:
+            assert False, "Make sure OS package bash-completion is installed"
 
 
 @contextlib.contextmanager

@@ -31,7 +31,9 @@ def completion_script_path(
         check=True,
     ).stdout
     with tempfile.NamedTemporaryFile() as f:
-        f.write("source {}\n".format(get_bash_completion_sh_path()).encode())
+        bash_completion_path = get_bash_completion_sh_path()
+        if bash_completion_path:
+            f.write("source {}\n".format(bash_completion_path).encode())
         f.write(bash_script)
         f.flush()
         yield Path(f.name)
