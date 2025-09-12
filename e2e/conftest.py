@@ -1,5 +1,6 @@
 import contextlib
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -7,6 +8,11 @@ from pathlib import Path
 from typing import Generator
 
 import pytest
+
+
+def is_shell_available(shell_name: str) -> bool:
+    """Check if a shell executable is available on the system."""
+    return shutil.which(shell_name) is not None
 
 
 @pytest.fixture(scope="session")
@@ -80,6 +86,9 @@ def fish_completions_from_stdout(stdout: str) -> list[tuple[str, str]]:
 def get_sorted_fish_completions(
     completions_script_path: Path, input: str
 ) -> list[tuple[str, str]]:
+    if not is_shell_available("fish"):
+        pytest.skip("fish shell not available")
+    
     completed_process = subprocess.run(
         [
             "fish",
@@ -151,6 +160,9 @@ def gen_grammar_zsh_capture_script_path(
 def get_zsh_capture_script_sorted_lines(
     generated_script_path: Path, input: str
 ) -> list[str]:
+    if not is_shell_available("zsh"):
+        pytest.skip("zsh shell not available")
+    
     zsh_process = subprocess.run(
         ["zsh", generated_script_path, input],
         stdout=subprocess.PIPE,
