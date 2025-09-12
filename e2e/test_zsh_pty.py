@@ -18,7 +18,7 @@ def get_autoloaded_completion_output(complgen_binary_path: Path, grammar: str, c
     if not shutil.which("zsh"):
         pytest.skip("zsh shell not available")
     
-    completion_script = subprocess.run([complgen_binary_path, '--zsh', '-', '-'], input=grammar.encode(), stdout=subprocess.PIPE, stderr=sys.stderr, check=True).stdout.decode()
+    completion_script = subprocess.run([complgen_binary_path, '--zsh', '-', '-'], input=grammar.encode(), stdout=subprocess.PIPE, stderr=sys.stderr, check=True, timeout=30).stdout.decode()
     (pid, fd) = pty.fork()
     if pid == 0:
         # We're in the child
