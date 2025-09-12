@@ -198,6 +198,8 @@ def get_zsh_capture_script_sorted_lines(
 def get_bash_completion_sh_path() -> str:
     if os.path.exists("/opt/homebrew/etc/profile.d/bash_completion.sh"):
         return "/opt/homebrew/etc/profile.d/bash_completion.sh"
+    elif os.path.exists("/usr/local/etc/profile.d/bash_completion.sh"):
+        return "/usr/local/etc/profile.d/bash_completion.sh"
     elif os.path.exists("/etc/bash_completion"):
         return "/etc/bash_completion"
     elif os.path.exists("/usr/share/bash-completion/bash_completion"):
