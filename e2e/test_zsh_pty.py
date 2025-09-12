@@ -1,13 +1,16 @@
 import os
 import re
 import sys
-import pty
 import shutil
-import termios
 import tempfile
 import platform
 import subprocess
 from pathlib import Path
+
+# Import Unix-specific modules conditionally
+if platform.system() != 'Windows':
+    import pty
+    import termios
 
 import pytest
 
