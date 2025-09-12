@@ -54,7 +54,7 @@ jobs:
       run: |
         # Install PowerShell and other shells on macOS using Homebrew
         brew install --cask powershell
-        brew install fish zsh
+        brew install fish zsh bash-completion
         
     - name: Verify shell installations
       run: |
