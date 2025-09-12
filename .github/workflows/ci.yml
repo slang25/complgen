@@ -37,23 +37,32 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
           
-    - name: Install PowerShell (Ubuntu)
+    - name: Install shells (Ubuntu)
       if: runner.os == 'Linux'
       run: |
-        # Install PowerShell on Ubuntu
-        wget -q "https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb"
-        sudo dpkg -i packages-microsoft-prod.deb
+        # Install fish and zsh from Ubuntu repositories
         sudo apt-get update
-        sudo apt-get install -y powershell
+        sudo apt-get install -y fish zsh
         
-    - name: Install PowerShell (macOS)
+        # Install PowerShell using direct download to avoid esm.ubuntu.com
+        wget -q "https://github.com/PowerShell/PowerShell/releases/download/v7.4.0/powershell_7.4.0-1.deb_amd64.deb"
+        sudo dpkg -i powershell_7.4.0-1.deb_amd64.deb || true
+        sudo apt-get install -f -y
+        
+    - name: Install shells (macOS)
       if: runner.os == 'macOS'
       run: |
-        # Install PowerShell on macOS using Homebrew
+        # Install PowerShell and other shells on macOS using Homebrew
         brew install --cask powershell
+        brew install fish zsh
         
-    - name: Verify PowerShell installation
-      run: pwsh -v
+    - name: Verify shell installations
+      run: |
+        pwsh -v
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          fish --version
+          zsh --version
+        fi
         
     - name: Setup Python
       uses: actions/setup-python@v4
