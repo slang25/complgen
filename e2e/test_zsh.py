@@ -1,4 +1,5 @@
 import os
+import platform
 import string
 import tempfile
 from pathlib import Path
@@ -13,6 +14,20 @@ from conftest import (
 import pytest
 from hypothesis import given, settings
 from hypothesis.strategies import text
+
+
+# Use platform-specific special characters that are valid in filenames
+if os.name == 'nt' or platform.system() == 'Windows':
+    # Windows doesn't allow: < > : " | ? * and ASCII 0-31
+    # Use characters that are special in shells but valid in Windows filenames
+    SPECIAL_CHARACTERS = "()[&]foo,bar"
+    # Expected zsh-escaped output for Windows
+    SPECIAL_CHARACTERS_ESCAPED = r"\(\)\[\&\]foo,bar"
+else:
+    # Unix-like systems can handle more special characters
+    SPECIAL_CHARACTERS = "?[^a]*{foo,*bar}"
+    # Expected zsh-escaped output for Unix
+    SPECIAL_CHARACTERS_ESCAPED = r"\?\[\^a\]\*\{foo,\*bar\}"
 
 
 def get_sorted_aot_completions(
@@ -79,13 +94,13 @@ def test_completes_paths(complgen_binary_path: Path):
     with tempfile.TemporaryDirectory() as dir:
         with set_working_dir(Path(dir)):
             Path("filename with spaces").write_text("dummy")
-            Path("?[^a]*{foo,*bar}").write_text("dummy")
+            Path(SPECIAL_CHARACTERS).write_text("dummy")
             os.mkdir("dir with spaces")
             assert get_sorted_aot_completions(
                 complgen_binary_path, GRAMMAR, "cmd "
             ) == sorted(
                 [
-                    r"\?\[\^a\]\*\{foo,\*bar\}",
+                    SPECIAL_CHARACTERS_ESCAPED,
                     r"filename\ with\ spaces",
                     r"dir\ with\ spaces",
                 ]
@@ -97,13 +112,13 @@ def test_completes_directories(complgen_binary_path: Path):
     with tempfile.TemporaryDirectory() as dir:
         with set_working_dir(Path(dir)):
             os.mkdir("dir with spaces")
-            os.mkdir("?[^a]*{foo,*bar}")
+            os.mkdir(SPECIAL_CHARACTERS)
             Path("filename with spaces").write_text("dummy")
             assert get_sorted_aot_completions(
                 complgen_binary_path, GRAMMAR, "cmd "
             ) == sorted(
                 [
-                    r"\?\[\^a\]\*\{foo,\*bar\}",
+                    SPECIAL_CHARACTERS_ESCAPED,
                     r"dir\ with\ spaces",
                 ]
             )
