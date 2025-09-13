@@ -1,4 +1,5 @@
 import os
+import platform
 import string
 import tempfile
 from pathlib import Path
@@ -76,7 +77,14 @@ cmd {{{ echo -e "completion\tdescription" }}};
         ]
 
 
-SPECIAL_CHARACTERS = "?[^a]*{foo,*bar}"
+# Use platform-specific special characters that are valid in filenames
+if os.name == 'nt' or platform.system() == 'Windows':
+    # Windows doesn't allow: < > : " | ? * and ASCII 0-31
+    # Use characters that are special in shells but valid in Windows filenames
+    SPECIAL_CHARACTERS = "()[&]foo,bar"
+else:
+    # Unix-like systems can handle more special characters
+    SPECIAL_CHARACTERS = "?[^a]*{foo,*bar}"
 
 
 def test_completes_paths(complgen_binary_path: Path):
