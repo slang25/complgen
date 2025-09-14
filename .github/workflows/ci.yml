@@ -57,6 +57,7 @@ jobs:
         brew install fish zsh bash-completion
         
     - name: Verify shell installations
+      shell: bash
       run: |
         pwsh -v
         if [ "$RUNNER_OS" != "Windows" ]; then

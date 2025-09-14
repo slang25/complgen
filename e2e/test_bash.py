@@ -1,5 +1,6 @@
 import contextlib
 import os
+import platform
 import string
 import subprocess
 import sys
@@ -31,13 +32,22 @@ def completion_script_path(
         check=True,
     ).stdout
     with tempfile.NamedTemporaryFile() as f:
-        f.write("source {}\n".format(get_bash_completion_sh_path()).encode())
+        bash_completion_path = get_bash_completion_sh_path()
+        if bash_completion_path:
+            f.write("source {}\n".format(bash_completion_path).encode())
         f.write(bash_script)
         f.flush()
         yield Path(f.name)
 
 
-SPECIAL_CHARACTERS = "?[^a]*{foo,*bar}"
+# Use platform-specific special characters that are valid in filenames
+if os.name == 'nt' or platform.system() == 'Windows':
+    # Windows doesn't allow: < > : " | ? * and ASCII 0-31
+    # Use characters that are special in shells but valid in Windows filenames
+    SPECIAL_CHARACTERS = "()[&]foo,bar"
+else:
+    # Unix-like systems can handle more special characters
+    SPECIAL_CHARACTERS = "?[^a]*{foo,*bar}"
 
 
 def test_completes_paths(complgen_binary_path: Path):

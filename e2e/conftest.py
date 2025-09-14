@@ -205,7 +205,13 @@ def get_bash_completion_sh_path() -> str:
     elif os.path.exists("/usr/share/bash-completion/bash_completion"):
         return "/usr/share/bash-completion/bash_completion"
     else:
-        assert False, "Make sure OS package bash-completion is installed"
+        # On Windows or other systems where bash completion is not available,
+        # return empty string to skip sourcing bash completion files
+        import platform
+        if os.name == 'nt' or platform.system() == 'Windows':
+            return ""
+        else:
+            assert False, "Make sure OS package bash-completion is installed"
 
 
 @contextlib.contextmanager
@@ -223,10 +229,23 @@ def gen_pwsh_completion_script_path(
     with tempfile.NamedTemporaryFile(mode="wb", suffix=".ps1", delete=False) as f:
         f.write(pwsh_script)
         f.flush()
+        temp_path = Path(f.name)
+    
+    try:
+        yield temp_path
+    finally:
+        # Handle Windows file deletion more gracefully
         try:
-            yield Path(f.name)
-        finally:
-            os.unlink(f.name)
+            os.unlink(temp_path)
+        except PermissionError:
+            # On Windows, sometimes files are locked briefly after creation
+            import time
+            time.sleep(0.1)  # Brief delay
+            try:
+                os.unlink(temp_path)
+            except (PermissionError, FileNotFoundError):
+                # If still can't delete, ignore - temp files will be cleaned up eventually
+                pass
 
 
 def get_sorted_pwsh_completions(

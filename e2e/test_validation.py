@@ -1,4 +1,5 @@
 import glob
+import os
 import subprocess
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from inline_snapshot import snapshot
 
 def complgen_check_path(complgen_binary_path: Path, path: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [complgen_binary_path, '--bash', '/dev/null', path],
+        [complgen_binary_path, '--bash', os.devnull, path],
         capture_output=True,
         text=True,
     )
